@@ -3,21 +3,19 @@ services:
   gluetun:
     image: qmcgaw/gluetun
     container_name: gluetun
-    # line above must be uncommented to allow external containers to connect.
-    # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/connect-a-container-to-gluetun.md#external-container-to-gluetun
     cap_add:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-    - 6881:6881
-    - 6881:6881/udp
-    - 8085:8085 # qbittorrent
-    - 9117:9117 # Jackett
-    - 8989:8989 # Sonarr
-    - 9696:9696 # Prowlarr
-    - 7878:7878 # Radarr
-    - 6767:6767 # bazarr
+      - 6881:6881
+      - 6881:6881/udp
+      - 8085:8085 # qbittorrent
+      - 9117:9117 # Jackett
+      - 8989:8989 # Sonarr
+      - 9696:9696 # Prowlarr
+      - 7878:7878 # Radarr
+      - 6767:6767 # Bazarr
     volumes:
       - /home/torrent/docker/arr-stack:/gluetun
     environment:
@@ -25,8 +23,8 @@ services:
       - VPN_TYPE=wireguard
       - VPN_ENDPOINT_IP=91.90.123.50
       - VPN_ENDPOINT_PORT=51820
-      - WIREGUARD_PUBLIC_KEY=ehajSjB9QTlhy30zbemS7ypGrQ+5Ej71jJ/+52JRkGI=
-      - WIREGUARD_PRIVATE_KEY=sLBD3vPOgUkHk1i6K8gy+LYnzvZnO6pzPAKjTIdgfVs=
+      - WIREGUARD_PUBLIC_KEY=
+      - WIREGUARD_PRIVATE_KEY=
       - WIREGUARD_PRESHARED_KEY=
       - WIREGUARD_ADDRESSES=10.2.0.2/32
 
@@ -72,41 +70,25 @@ services:
       - TZ=Europe/Brussels
     volumes:
       - /home/torrent/docker/arr-stack/prowlarr/data:/config
-      depends_on:
-        - gluetun
-      restart: unless-stopped
+    depends_on:
+      - gluetun
+    restart: unless-stopped
 
-    
-  sonarr:
-    image: lscr.io/linuxserver/sonarr:latest
-    container_name: sonarr
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
     network_mode: "service:gluetun"
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/Brussels
     volumes:
-      - /home/torrent/docker/arr-stack/sonarr/data:/config
-      - /home/torrent/docker/arr-stack/sonarr/tvseries:/tv #optional
-      - /home/torrent/docker/arr-stack/sonarr/downloadclient-downloads:/downloads #optional
+      - /home/torrent/docker/arr-stack/radarr/data:/config
+      - /home/torrent/docker/arr-stack/radarr/movies:/movies #optional
+      - /home/torrent/docker/arr-stack/radarr/downloadclient-downloads:/downloads #optional
     depends_on:
       - gluetun
     restart: unless-stopped
-
-  prowlarr:
-    image: lscr.io/linuxserver/prowlarr:latest
-    container_name: prowlarr
-    network_mode: "service:gluetun"
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Brussels
-    volumes:
-      - /home/torrent/docker/arr-stack/prowlarr/data:/config
-    depends_on:
-      - gluetun
-    restart: unless-stopped
-
 
   bazarr: 
     image: lscr.io/linuxserver/bazarr:latest 
@@ -117,7 +99,7 @@ services:
       - PGID=1000 
       - TZ=Europe/Brussels
     volumes: 
-      - /home/torrent/docker/arr-stackbazarr:/config 
+      - /home/torrent/docker/arr-stack/bazarr:/config 
     depends_on:
       - gluetun
     restart: unless-stopped 
